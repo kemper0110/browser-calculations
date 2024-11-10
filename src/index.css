@@ -1,0 +1,9 @@
+body {
+  margin: 0;
+}
+
+.card-title {
+  text-overflow: initial;
+  white-space: initial;
+  overflow: initial;
+}
