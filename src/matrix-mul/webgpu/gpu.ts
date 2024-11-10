@@ -33,32 +33,19 @@ export async function setup() {
         if(matrixA.length !== size * size) throw new Error('Matrix sizes must be equal')
         if(matrixB.length !== size * size) throw new Error('Matrix sizes must be equal')
 
-        const sizeArr = new Uint32Array(1);
-        sizeArr[0] = size;
-
-
         const matrixABuffer = device.createBuffer({
             size: matrixA.byteLength,
-            usage: GPUBufferUsage.STORAGE,
-            mappedAtCreation: true,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         })
-        new Float32Array(matrixABuffer.getMappedRange()).set(matrixA);
-        matrixABuffer.unmap();
         const matrixBBuffer = device.createBuffer({
             size: matrixB.byteLength,
-            usage: GPUBufferUsage.STORAGE,
-            mappedAtCreation: true,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         })
-        new Float32Array(matrixBBuffer.getMappedRange()).set(matrixB);
-        matrixBBuffer.unmap();
-
+        const sizeArr = new Uint32Array([size]);
         const sizeBuffer = device.createBuffer({
             size: sizeArr.byteLength,
-            usage: GPUBufferUsage.STORAGE,
-            mappedAtCreation: true,
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         })
-        new Uint32Array(sizeBuffer.getMappedRange()).set(sizeArr);
-        sizeBuffer.unmap();
 
         const resultMatrixByteLength = Float32Array.BYTES_PER_ELEMENT * size * size;
         const resultMatrixBuffer = device.createBuffer({
@@ -76,6 +63,10 @@ export async function setup() {
             ],
         });
 
+
+        device.queue.writeBuffer(matrixABuffer, 0, matrixA);
+        device.queue.writeBuffer(matrixBBuffer, 0, matrixB);
+        device.queue.writeBuffer(sizeBuffer, 0, sizeArr);
 
         const commandEncoder = device.createCommandEncoder();
         for (let i = 0; i < iterations; i++) {
