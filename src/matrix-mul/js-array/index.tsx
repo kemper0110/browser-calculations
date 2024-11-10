@@ -101,7 +101,14 @@ export function JsArrayCard() {
                 </Button>
                 <ComputeResult result={result}/>
                 <Paragraph>
-                    Генерируемый движком v8 <Link href={'/js-array.asm'} target={'_blank'}>ассемблер</Link>.
+                    {
+                        arrayType === 'common' ? (
+                            <>Генерируемый движком v8 <Link href={'/js-array.asm'} target={'_blank'}>ассемблер</Link> для обычных массивов.</>
+                        ) : (
+                            <>Генерируемый движком v8 <Link href={'/typed-array.asm'} target={'_blank'}>ассемблер</Link> для типизированных массивов.</>
+                        )
+                    }
+
                 </Paragraph>
             </Space>
             {/*<TextArea style={{marginTop: 16}} rows={4} readOnly={true} value={logString}/>*/}
