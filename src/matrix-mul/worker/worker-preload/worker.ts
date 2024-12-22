@@ -20,15 +20,15 @@ self.onmessage = e => {
 
 // Функция умножения матриц
 function multiplyMatrices(a: Float64Array, b: Float64Array, c: Float64Array, startRow: number, endRow: number, size: number) {
-    const r = new Float64Array(size * size);
+    // const r = new Float64Array(size * size);
     const start = performance.now();
     for (let i = 0; i < size; i++) {
         for (let j = startRow; j < endRow; j++) {
             let sum = 0;
             for (let k = 0; k < size; k++)
                 sum += a[i * size + k] * b[j * size + k];
-            // c[i * size + j] = sum;
-            r[i * size + j] = sum;
+            c[i * size + j] = sum;
+            // r[i * size + j] = sum;
         }
     }
     const end = performance.now();

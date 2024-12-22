@@ -1,23 +1,11 @@
-// import {mulParallel} from "./matrix-mul/worker/worker-preload";
-// import {generateMatrixWorker} from "./matrix-mul/worker/generate.ts";
 import {Layout, Space, theme, Typography} from "antd";
 import {JsArrayCard} from "./matrix-mul/js-array";
 import {WebGPUCard} from "./matrix-mul/webgpu";
+import {WasmCard} from "./matrix-mul/wasm";
+import {WorkerCard} from "./matrix-mul/worker";
 
 const {Title} = Typography;
 const {Header, Content, Footer} = Layout
-// import {generateMatrixBasic, mulBasic} from "./matrix-mul/basic.ts";
-// import {generateMatrixTyped, mulTyped} from "./matrix-mul/typed.ts";
-//
-// const generateMatrix = generateMatrixWasm
-// const mul = mulWasmReturningGlue
-
-// const generateMatrix = generateMatrixTyped
-// const mul = mulTyped
-
-// const mul = mulBasic
-// const generateMatrix = generateMatrixBasic
-
 
 function App() {
     const {
@@ -56,6 +44,8 @@ function App() {
                            }}
                     >
                         <JsArrayCard/>
+                        <WorkerCard/>
+                        <WasmCard/>
                         <WebGPUCard/>
                     </Space>
                 </div>

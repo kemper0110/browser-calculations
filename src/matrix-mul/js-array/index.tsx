@@ -1,10 +1,10 @@
 import {Card} from "../../components/Card.tsx";
-import {Button, Flex, Segmented, Select, Space, Typography} from "antd";
+import {Alert, Button, Flex, Segmented, Select, Space, Typography} from "antd";
 import {useState} from "react";
 import {formatMs} from "../../utils/formatTime.ts";
 
-import MulWorker from './worker?worker'
-import type {ArrayType, Message, Result} from './worker'
+import MulWorker from './js-array-worker.ts?worker'
+import type {ArrayType, Message, Result} from './js-array-worker.ts'
 
 import {ComputeResult} from "../../components/ComputeResult.tsx";
 import {ComputeTimer} from "../../components/ComputeTimer.tsx";
@@ -30,6 +30,7 @@ export function JsArrayCard() {
                 w!.onmessage = (e: MessageEvent<Result>) => res(e.data)
                 w!.onerror = e => rej(e)
             })
+            // результат не интересен, его просто отправляем в консоль
             console.log('js result', result)
             setResult({
                 kind: 'ok',
@@ -53,7 +54,7 @@ export function JsArrayCard() {
             <Space direction={'vertical'} size={8}>
                 <Flex align={'center'} gap={8}>
                     <Text>Размер матрицы</Text>
-                    <Select<number> options={[
+                    <Select<number> style={{minWidth: 100}} options={[
                         {
                             value: 128,
                             label: '128x128',
@@ -93,9 +94,6 @@ export function JsArrayCard() {
                         },
                     ]} value={arrayType} onChange={(value) => setArrayType(value)}/>
                 </Flex>
-                <Paragraph>
-                    Выполнение проводится в фоновом web worker, поэтому зависания интерфейса не будет.
-                </Paragraph>
                 <Button type={'primary'} onClick={onRunClick}>
                     Запустить {calculating ? <ComputeTimer/> : ''}
                 </Button>
@@ -108,10 +106,8 @@ export function JsArrayCard() {
                             <>Генерируемый движком v8 <Link href={'/typed-array.asm'} target={'_blank'}>ассемблер</Link> для типизированных массивов.</>
                         )
                     }
-
                 </Paragraph>
             </Space>
-            {/*<TextArea style={{marginTop: 16}} rows={4} readOnly={true} value={logString}/>*/}
         </Card>
     )
 }

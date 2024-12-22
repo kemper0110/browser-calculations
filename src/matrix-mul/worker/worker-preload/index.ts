@@ -1,8 +1,6 @@
 import MatWorker from "./worker.ts?worker";
+import {generateMatrixWorker} from "../generate.ts";
 
-// const numWorkers = navigator.hardwareConcurrency || 1;
-const numWorkers = 8;
-const workers = Array.from({length: numWorkers}, () => new MatWorker());
 
 export type Message = SetMatricesMessage | RunMessage
 export type RunMessage = {
@@ -18,9 +16,18 @@ export type SetMatricesMessage = {
     size: number
 }
 
-export async function mulParallel(a: Float64Array, b: Float64Array, result: Float64Array, size: number) {
-    const rowsPerWorker = Math.ceil(size / numWorkers);
-    console.log('rowsPerWorker', size / numWorkers)
+export async function mulParallel(concurrency: number, size: number) {
+    const buff = new SharedArrayBuffer(Float64Array.BYTES_PER_ELEMENT * size * size);
+    const result = new Float64Array(buff);
+    const a = generateMatrixWorker(size)
+    const b = generateMatrixWorker(size)
+
+    const workers = Array.from({length: concurrency}, () => new MatWorker());
+
+    await new Promise(res => setTimeout(res, 100))
+
+    const rowsPerWorker = Math.ceil(size / concurrency);
+    console.log('rowsPerWorker', rowsPerWorker)
 
     workers.forEach(worker => {
         worker.postMessage({
@@ -31,13 +38,13 @@ export async function mulParallel(a: Float64Array, b: Float64Array, result: Floa
             size,
         } satisfies SetMatricesMessage);
     });
+    await new Promise(res => setTimeout(res, 100))
 
-    return function() {
-        return Promise.all(
-            Array.from({length: numWorkers}, (_, i) => i)
-            // [0]
-                .map(i =>
-                new Promise((res, rej) => {
+    const start = performance.now()
+    await Promise.all(
+        Array.from({length: concurrency}, (_, i) => i)
+            .map(i =>
+                new Promise<void>((res, rej) => {
                     const worker = workers[i];
                     const startRow = i * rowsPerWorker;
                     const endRow = Math.min(startRow + rowsPerWorker, size);
@@ -53,6 +60,11 @@ export async function mulParallel(a: Float64Array, b: Float64Array, result: Floa
                         rej(error);
                     };
                 }))
-        )
+    )
+    const end = performance.now()
+    workers.forEach(w => w.terminate())
+    return {
+        result: result.reduce((acc, cur) => acc + cur, 0),
+        time: end - start
     }
 }

@@ -1,13 +1,13 @@
 import {Card} from "../../components/Card.tsx";
-import {Alert, Button, Flex, InputNumber, Segmented, Select, Slider, Space, Typography} from "antd";
+import {Alert, Button, Flex, InputNumber, Select, Slider, Space, Typography} from "antd";
 import {formatMs} from "../../utils/formatTime.ts";
 import {ComputeResult} from "../../components/ComputeResult.tsx";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 import {ComputeTimer} from "../../components/ComputeTimer.tsx";
-import {setup} from "./gpu.ts";
+import {calculate, GpuComputeMethod} from "./gpu.ts";
 import {killer} from "./killer";
 
-const {Text, Paragraph, Link} = Typography
+const {Text} = Typography
 
 
 function generateMatrixTyped(size: number): Float32Array {
@@ -28,29 +28,21 @@ export function WebGPUCard() {
     const [result, setResult] = useState<ComputeResult | undefined>()
 
     const [notAvailable, setNotAvailable] = useState<string | undefined>(undefined)
-
-    const [calculate, setCalculate] = useState<{ fn: Awaited<ReturnType<typeof setup>> } | undefined>(undefined)
-    useEffect(() => {
-        (async () => {
-            try {
-                setCalculate({fn: await setup()})
-            } catch (e) {
-                console.error(e)
-                setNotAvailable('Кажется, у вас нет поддержки WebGPU в этом браузере: ' + (e as Error).message)
-            }
-        })()
-    }, [])
+    const [method, setMethod] = useState<GpuComputeMethod>('basic')
 
     const onRunClick = async () => {
         setCalculating(true)
         try {
             const matrixA = generateMatrixTyped(size);
             const matrixB = generateMatrixTyped(size);
-            const {result, time} = await calculate!.fn(matrixA, matrixB, size, iterations)
-            console.log('gpu result', result)
+            // const {result: r1, time: t1} = await calculate('basic', matrixA, matrixB, size, iterations)
+            const {result: r2, time: t2} = await calculate(method, matrixA, matrixB, size, iterations)
+            // console.log('gpu result', r1, r2)
+            console.log('gpu result', r2)
             setResult({
                 kind: 'ok',
-                value: formatMs(time)
+                // value: formatMs(t1) + ' ' + formatMs(t2)
+                value: formatMs(t2)
             })
         } catch (e) {
             setResult({
@@ -67,6 +59,23 @@ export function WebGPUCard() {
     return (
         <Card title={'Умножение матриц с помощью WebGPU'}>
             <Space direction={'vertical'} size={8}>
+                <Flex align={'center'} gap={8}>
+                    <Text>Метод умножения</Text>
+                    <Select<GpuComputeMethod> options={[
+                        {
+                            value: '',
+                            label: '',
+                        },
+                        {
+                            value: 2560,
+                            label: '2560x2560',
+                        },
+                        {
+                            value: 3200,
+                            label: '3200x3200',
+                        },
+                    ]} value={size} onChange={(value) => setSize(value)}/>
+                </Flex>
                 <Flex align={'center'} gap={8}>
                     <Text>Размер матрицы</Text>
                     <Select<number> options={[
@@ -98,6 +107,14 @@ export function WebGPUCard() {
                             value: 2048,
                             label: '2048x2048',
                         },
+                        {
+                            value: 2560,
+                            label: '2560x2560',
+                        },
+                        {
+                            value: 3200,
+                            label: '3200x3200',
+                        },
                     ]} value={size} onChange={(value) => setSize(value)}/>
                 </Flex>
                 <Flex wrap={true} align={'center'} gap={8}>
@@ -119,9 +136,7 @@ export function WebGPUCard() {
                         }}
                     />
                 </Flex>
-                <Paragraph>
-                    Выполнение проводится асинхронно, но на слабых устройствах интерфейс может зависать.
-                </Paragraph>
+                <Alert type={'warning'} message={<> Выполнение проводится асинхронно, но на слабых устройствах интерфейс может зависать. </>}/>
                 {
                     notAvailable ? (
                         <Alert type={'error'} message={notAvailable}/>
@@ -131,12 +146,12 @@ export function WebGPUCard() {
                         </Button>
                     )
                 }
-                <Button onClick={() => {
-                    killer().then(kill => kill())
-                        .then(() => console.log('killed'))
-                }}>
-                    Kill
-                </Button>
+                {/*<Button onClick={() => {*/}
+                {/*    killer().then(kill => kill())*/}
+                {/*        .then(() => console.log('killed'))*/}
+                {/*}}>*/}
+                {/*    Kill*/}
+                {/*</Button>*/}
                 <ComputeResult result={result}/>
             </Space>
             {/*<TextArea style={{marginTop: 16}} rows={4} readOnly={true} value={logString}/>*/}

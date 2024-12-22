@@ -11,13 +11,13 @@
   },
   "dependencies": {
     "@dardanda/rust-mat-mul": "0.1.2",
-    "@webgpu/types": "^0.1.51",
     "antd": "^5.21.6",
     "nanoid": "^5.0.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@webgpu/types": "^0.1.51",
     "@eslint/js": "^9.11.1",
     "@types/paralleljs": "^0.0.24",
     "@types/react": "^18.3.10",
